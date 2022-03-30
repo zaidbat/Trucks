@@ -7,67 +7,96 @@ import {
   TouchableOpacity,
   RefreshControl,
   FlatList,
+  Alert,
 } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { Header } from "react-native-elements";
+import { Header, Icon, Badge } from "react-native-elements";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import Bid from "./BidComponent";
+import { AuthContext } from "../Shared/Utils";
+import * as SecureStore from "expo-secure-store";
+import trucksApi from "../Shared/trucksApi";
 
-const wait = (timeout) => {
-  return new Promise((resolve) => setTimeout(resolve, timeout));
-};
+const DriverProfile = ({ navigation }) => {
+  const wait = (timeout) => {
+    return new Promise((resolve) => setTimeout(resolve, timeout));
+  };
 
-export default function DriverProfile() {
-  const DATA = [
-    {
-      id: "1",
-      moveType: "Home Furiture",
-      date: "26.12.2021",
-      time: "04:00 PM",
-      price: "30 JOD",
-      kmCount: "40.5 Km",
-      latitude: "43.6552",
-      longitude: "86.9876",
-    },
-    {
-      id: "2",
-      moveType: "Home Furiture2",
-      date: "26.12.2021",
-      time: "04:00 PM",
-      price: "30 JOD",
-      kmCount: "40.5 Km",
-      latitude: "43.6552",
-      longitude: "86.9876",
-    },
-    {
-      id: "3",
-      moveType: "Home Furiture3",
-      date: "26.12.2021",
-      time: "04:00 PM",
-      price: "30 JOD",
-      kmCount: "40.5 Km",
-      latitude: "43.6552",
-      longitude: "86.9876",
-    },
-  ];
+  const { signOut } = React.useContext(AuthContext);
 
   const [refreshing, setRefreshing] = React.useState(false);
+  const [profile, setProfile] = React.useState({});
+  const [Bids, setBids] = React.useState([]);
+  const [doFetch, setDoFetch] = React.useState(true);
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
-    wait(2000).then(() => setRefreshing(false));
+    wait(500).then(() => setRefreshing(false));
   }, []);
+
+  React.useEffect(async () => {
+    if (doFetch) {
+      let token = await SecureStore.getItemAsync("token");
+      setDoFetch(false);
+      await trucksApi
+        .get("Driver/GetProfile", {
+          headers: {
+            Authorization: "Bearer " + token,
+          },
+        })
+        .then((response) => {
+          setProfile(response.data.info);
+          setBids(response.data.bids);
+          console.log("called api");
+          setDoFetch(true);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
+  });
+
   return (
     <SafeAreaProvider>
       <Header
         leftComponent={
-          <Image
-            style={{ height: 55, width: 55 }}
-            source={require("../../assets/menu.png")}
-          />
+          <TouchableOpacity
+            onPress={() =>
+              Alert.alert("Are you sure you want to log out?", "", [
+                {
+                  text: "Cancel",
+                  onPress: () => {},
+                  style: "cancel",
+                },
+                { text: "OK", onPress: () => signOut() },
+              ])
+            }
+          >
+            <Image
+              style={{ height: 55, width: 55 }}
+              source={require("../../assets/LogOut.png")}
+            />
+          </TouchableOpacity>
         }
         centerComponent={{ text: "Pofile", style: styles.heading }}
         containerStyle={{ backgroundColor: "#fff" }}
+        rightComponent={
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate("DriverOrders");
+            }}
+          >
+            <Image
+              style={{ height: 55, width: 55 }}
+              source={require("../../assets/Orders.png")}
+            />
+            {/* <Badge
+              status="success"
+              value={10}
+              containerStyle={{ position: 'absolute', top: 0, right: 0 }}
+            /> */}
+          </TouchableOpacity>
+        }
       />
       <View
         style={{
@@ -89,11 +118,13 @@ export default function DriverProfile() {
         >
           <View
             style={{
-              backgroundColor: "#6ECC4C",
+              backgroundColor: "#64BF46",
               borderRadius: 20,
               padding: 20,
               paddingTop: 30,
               marginTop: 40,
+              borderWidth: 5,
+              borderColor: "#6ECC4C",
             }}
           >
             <View style={{ alignItems: "center" }}>
@@ -127,7 +158,7 @@ export default function DriverProfile() {
                 <Text
                   style={{ fontSize: 18, fontWeight: "400", color: "#282828" }}
                 >
-                  0799460528
+                  {profile.phoneNumber}
                 </Text>
               </View>
             </View>
@@ -148,7 +179,7 @@ export default function DriverProfile() {
                 <Text
                   style={{ fontSize: 18, fontWeight: "400", color: "#282828" }}
                 >
-                  Zaid essam albataineh
+                  {profile.fullName}
                 </Text>
               </View>
             </View>
@@ -193,7 +224,7 @@ export default function DriverProfile() {
                         color: "#282828",
                       }}
                     >
-                      25 - 36764
+                      {profile.vehicleCode} - {profile.vehicleNo}
                     </Text>
                   </View>
                 </View>
@@ -221,10 +252,10 @@ export default function DriverProfile() {
                         fontSize: 18,
                         fontWeight: "400",
                         color: "#282828",
-                        width: "70%",
+                        width: "100%",
                       }}
                     >
-                      Box - truck up to 350 kg
+                      {profile.truckType}
                     </Text>
                   </View>
                 </View>
@@ -244,7 +275,7 @@ export default function DriverProfile() {
                   }}
                 />
                 <TouchableOpacity>
-                  <Image
+                  {/* <Image
                     style={{
                       width: 36,
                       height: 36,
@@ -254,30 +285,21 @@ export default function DriverProfile() {
                       right: -10,
                     }}
                     source={require("../../assets/ImportImage.png")}
-                  />
+                  /> */}
                 </TouchableOpacity>
               </View>
             </View>
           </View>
 
           <FlatList
-            data={DATA}
-            renderItem={({ item }) => (
-              <Bid
-                time={item.time}
-                date={item.date}
-                moveType={item.moveType}
-                price={item.price}
-                id={item.id}
-                kmCount={item.kmCount}
-              ></Bid>
-            )}
+            data={Bids}
+            renderItem={({ item }) => <Bid data={item}></Bid>}
           />
         </KeyboardAwareScrollView>
       </View>
     </SafeAreaProvider>
   );
-}
+};
 
 const styles = StyleSheet.create({
   heading: {
@@ -286,3 +308,5 @@ const styles = StyleSheet.create({
     fontWeight: "400",
   },
 });
+
+export default DriverProfile;

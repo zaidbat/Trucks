@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState } from "react";
 import {
   Text,
   View,
@@ -9,28 +9,29 @@ import {
   Modal,
   KeyboardAvoidingView,
   Platform,
-} from 'react-native';
+} from "react-native";
 import {
   CodeField,
   Cursor,
   useBlurOnFulfill,
   useClearByFocusCell,
-} from 'react-native-confirmation-code-field';
-import styles from '../Shared/PhoneNumberStyle.js';
-import { Button } from 'react-native-elements';
+} from "react-native-confirmation-code-field";
+import styles from "../Shared/PhoneNumberStyle.js";
+import { Button } from "react-native-elements";
+import { AuthContext } from "../Shared/Utils.js";
+import trucksApi from "../Shared/trucksApi.js";
 
-
-export default function UserPhoneNumber() {
+const UserPhoneNumber = () => {
+  const { signIn } = React.useContext(AuthContext);
   const [phoneApiLoading, setPhoneApiLoading] = useState(false);
   const [codeApiLoading, setCodeApiLoading] = useState(false);
 
-  const [codeErrorMessage, setCodeErrorMessage] = useState('');
+  const [codeErrorMessage, setCodeErrorMessage] = useState("");
   const CELL_COUNT = 9;
   const CODE_CELL_COUNT = 4;
-  const lastNameRef = useRef();
-  const [value, setValue] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [code, setCode] = useState('');
+  const [value, setValue] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [code, setCode] = useState("");
   const ref = useBlurOnFulfill({ value, cellCount: CELL_COUNT });
   const [props, getCellOnLayoutHandler] = useClearByFocusCell({
     value,
@@ -39,141 +40,144 @@ export default function UserPhoneNumber() {
   const [modalVisable, setModalVisable] = useState(false);
   const sendPhoneNo = () => {
     setPhoneApiLoading(true);
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+
+    trucksApi
+      .post("customer/login", {
         phonenumber: phoneNumber,
-      }),
-    };
-    fetch('http://192.168.1.6/Trucks.API/API/customer/login', requestOptions)
-      .then((response) => response.json())
+      })
       .then((dataResult) => {
-        if (dataResult.status == 1) {
+        if (dataResult.data.status == 1) {
           setTimeout(() => {
             setModalVisable(true);
             setPhoneApiLoading(false);
-          }, 2000);
+          }, 500);
 
-          console.log(dataResult);
+          console.log(dataResult.data);
         } else {
-          alert(dataResult.message);
+          alert(dataResult.data.message);
         }
       });
   };
 
   const SendCodeNo = () => {
-    console.log('codeNumber: ' + code);
-    setCodeErrorMessage('');
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+    console.log("codeNumber: " + code);
+    setCodeApiLoading(true);
+    setCodeErrorMessage("");
+
+    trucksApi
+      .post("customer/login", {
         phonenumber: phoneNumber,
         code: code,
-      }),
-    };
-    setCodeApiLoading(true);
-    fetch('http://192.168.1.6/Trucks.API/API/customer/login', requestOptions)
-      .then((response) => response.json())
+      })
       .then((dataResult) => {
-        if (dataResult.status == 1) {
+        if (dataResult.data.status == 1) {
           setTimeout(() => {
+            let userType = "user";
+            let isRegistered = dataResult.data.isRegistered;
+            let token = dataResult.data.token;
             setCodeApiLoading(false);
-            alert('yeahhhhh');
-          }, 2000);
-          
+            signIn({ userType, isRegistered, token });
+          }, 500);
         } else {
           setCodeApiLoading(false);
-          setCodeErrorMessage('Wrong Code');
+          setCodeErrorMessage("Wrong Code");
         }
       });
   };
   return (
-    <View style={{ backgroundColor: '#27323F', flex: 1 }}>
+    <View style={{ backgroundColor: "#27323F", flex: 1 }}>
       <SafeAreaView
-        style={{ backgroundColor: '#27323F', height: 120 }}></SafeAreaView>
+        style={{ backgroundColor: "#27323F", height: 120 }}
+      ></SafeAreaView>
       <View
-        style={{ alignItems: 'center', zIndex: 10, justifyContent: 'center' }}>
+        style={{ alignItems: "center", zIndex: 10, justifyContent: "center" }}
+      >
         <View
           style={{
-            alignItems: 'center',
-            justifyContent: 'center',
+            alignItems: "center",
+            justifyContent: "center",
             paddingHorizontal: 10,
             paddingBottom: 25,
-            backgroundColor: '#27323F',
-            position: 'absolute',
+            backgroundColor: "#27323F",
+            position: "absolute",
             bottom: -30,
             borderRadius: 40,
-          }}>
+          }}
+        >
           <Image
             style={{
               width: 40,
               height: 57,
             }}
-            source={require('../../assets/location.png')}></Image>
+            source={require("../../assets/location.png")}
+          ></Image>
         </View>
       </View>
       <View
         style={{
-          backgroundColor: '#152023',
+          backgroundColor: "#152023",
           flex: 1,
           borderTopEndRadius: 40,
           borderTopStartRadius: 40,
-          justifyContent: 'space-around',
-        }}>
+          justifyContent: "space-around",
+        }}
+      >
         <View
           style={{
             flex: 1,
-            alignItems: 'center',
-            justifyContent: 'space-around',
-            width: '100%',
-          }}>
+            alignItems: "center",
+            justifyContent: "space-around",
+            width: "100%",
+          }}
+        >
           <View>
-            <Text style={{ color: 'white', fontSize: 25 }}>
+            <Text style={{ color: "white", fontSize: 25 }}>
               Enter your mobile number
             </Text>
           </View>
-          <View style={{ flexDirection: 'row' }}>
+          <View style={{ flexDirection: "row" }}>
             <Image
               style={{
                 height: 30,
                 width: 30,
               }}
-              source={require('../../assets/jordan.png')}></Image>
-            <Text style={{ color: '#fff', fontSize: 25 }}> +962 </Text>
+              source={require("../../assets/jordan.png")}
+            ></Image>
+            <Text style={{ color: "#fff", fontSize: 25 }}> +962 </Text>
             <View>
-            <CodeField
-              autoFocus
-              ref={ref}
-              {...props}
-              value={value}
-              onChangeText={(value) => {
-                setValue(value);
-                setPhoneNumber(value);
-              }}
-              cellCount={CELL_COUNT}
-              rootStyle={styles.codeFieldRoot}
-              keyboardType="number-pad"
-              renderCell={({ index, symbol, isFocused }) => (
-                <View
-                  onLayout={getCellOnLayoutHandler(index)}
-                  key={index}
-                  style={[styles.cellRoot, isFocused && styles.focusCell]}>
-                  <Text style={styles.cellText}>
-                    {symbol || (isFocused ? <Cursor /> : null)}
-                  </Text>
-                </View>
-              )}
-            />
+              <CodeField
+                autoFocus
+                ref={ref}
+                {...props}
+                value={value}
+                onChangeText={(value) => {
+                  setValue(value);
+                  setPhoneNumber(value);
+                }}
+                cellCount={CELL_COUNT}
+                rootStyle={styles.codeFieldRoot}
+                keyboardType="number-pad"
+                renderCell={({ index, symbol, isFocused }) => (
+                  <View
+                    onLayout={getCellOnLayoutHandler(index)}
+                    key={index}
+                    style={[styles.cellRoot, isFocused && styles.focusCell]}
+                  >
+                    <Text style={styles.cellText}>
+                      {symbol || (isFocused ? <Cursor /> : null)}
+                    </Text>
+                  </View>
+                )}
+              />
             </View>
           </View>
         </View>
         <View
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
           <Button
             disabled={phoneNumber.length != 9}
-            loadingProps={{ color: '#fff' }}
+            loadingProps={{ color: "#fff" }}
             loading={phoneApiLoading}
             onPress={(value) => {
               sendPhoneNo();
@@ -182,56 +186,57 @@ export default function UserPhoneNumber() {
             type="outline"
             buttonStyle={[
               {
-                borderColor: '#fff',
+                borderColor: "#fff",
                 width: 250,
                 borderRadius: 10,
                 padding: 15,
               },
               phoneNumber.length != 9 ? { opacity: 0.6 } : {},
             ]}
-            titleStyle={{ color: '#fff', fontSize: 22 }}
+            titleStyle={{ color: "#fff", fontSize: 22 }}
           />
         </View>
 
         <Modal visible={modalVisable} transparent={true} animationType="slide">
           <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={{
-              width: '100%',
-              height: '100%',
-              flexDirection: 'row',
-              justifyContent: 'center',
-              alignItems: 'center',
-              backgroundColor: '#000000CC',
-            }}>
+              width: "100%",
+              height: "100%",
+              flexDirection: "row",
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: "#000000CC",
+            }}
+          >
             <View
               style={{
-                backgroundColor: '#7040F6',
-                width: '80%',
+                backgroundColor: "#7040F6",
+                width: "80%",
                 height: 350,
                 borderRadius: 40,
-                alignItems: 'center',
-                justifyContent: 'space-evenly',
-              }}>
-              <Text style={{ color: '#fff', fontSize: 30 }}>
+                alignItems: "center",
+                justifyContent: "space-evenly",
+              }}
+            >
+              <Text style={{ color: "#fff", fontSize: 30 }}>
                 Verification Code
               </Text>
               <Text
                 style={{
-                  color: '#fff',
+                  color: "#fff",
                   fontSize: 20,
                   paddingHorizontal: 20,
-                  textAlign: 'center',
-                  fontWeight: '200',
-                }}>
+                  textAlign: "center",
+                  fontWeight: "200",
+                }}
+              >
                 Please enter the verfication code sent to you via SMS
               </Text>
-              <Text style={{ color: '#FF5677' }}>
-                {codeErrorMessage}
-              </Text> 
+              <Text style={{ color: "#FF5677" }}>{codeErrorMessage}</Text>
               <CodeField
-              textContentType='oneTimeCode'
-              autoFocus={true} 
+                textContentType="oneTimeCode"
+                autoFocus={true}
                 {...props}
                 value={code}
                 onChangeText={(text) => {
@@ -247,7 +252,8 @@ export default function UserPhoneNumber() {
                   <View
                     onLayout={getCellOnLayoutHandler(index)}
                     key={index}
-                    style={[styles.cellRoot, isFocused && styles.focusCell]}>
+                    style={[styles.cellRoot, isFocused && styles.focusCell]}
+                  >
                     <Text style={styles.cellText}>
                       {symbol || (isFocused ? <Cursor /> : null)}
                     </Text>
@@ -256,7 +262,7 @@ export default function UserPhoneNumber() {
               />
               <Button
                 disabled={code.length != 4}
-                loadingProps={{ color: '#fff' }}
+                loadingProps={{ color: "#fff" }}
                 loading={codeApiLoading}
                 onPress={(value) => {
                   Keyboard.dismiss();
@@ -266,14 +272,14 @@ export default function UserPhoneNumber() {
                 type="outline"
                 buttonStyle={[
                   {
-                    borderColor: '#fff',
+                    borderColor: "#fff",
                     width: 200,
                     borderRadius: 10,
                     padding: 15,
                   },
                   phoneNumber.length != 4 ? { opacity: 0.6 } : {},
                 ]}
-                titleStyle={{ color: '#fff', fontSize: 22 }}
+                titleStyle={{ color: "#fff", fontSize: 22 }}
               />
             </View>
           </KeyboardAvoidingView>
@@ -281,4 +287,6 @@ export default function UserPhoneNumber() {
       </View>
     </View>
   );
-}
+};
+
+export default UserPhoneNumber;

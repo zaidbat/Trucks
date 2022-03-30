@@ -8,26 +8,28 @@ import {
   RefreshControl,
   FlatList,
   TextInput,
-  Alert
 } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { Header, Icon, withBadge } from "react-native-elements";
+import {
+  Header,
+  Badge,
+  Icon,
+  withBadge,
+  PressableProps,
+} from "react-native-elements";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { AuthContext } from "../Shared/Utils";
-import Bid from "../User/BidComponent";
+import Order from "../User/OrderComponent";
 import trucksApi from "../Shared/trucksApi";
 import * as SecureStore from "expo-secure-store";
 
-const UserMainScreen = ({ navigation }) => {
-  const { signOut } = React.useContext(AuthContext);
+const UserOrders = ({ navigation }) => {
   const [Bids, setBids] = React.useState([]);
   const [doFetch, setDoFetch] = React.useState(true);
   const [orderCount, setOrderCount] = React.useState(true);
 
   const renderItem = ({ item }) => (
-    <Bid data={item} navigation={navigation}></Bid>
+    <Order data={item} navigation={navigation}></Order>
   );
-  const BadgedIcon = withBadge(24)(Icon);
 
   React.useEffect(async () => {
     if (doFetch) {
@@ -35,7 +37,7 @@ const UserMainScreen = ({ navigation }) => {
       setDoFetch(false);
 
       await trucksApi
-        .get("customer/GetMyPendingBids", {
+        .get("customer/MyActiveOrders", {
           headers: {
             Authorization: "Bearer " + token,
           },
@@ -56,41 +58,17 @@ const UserMainScreen = ({ navigation }) => {
     <SafeAreaProvider>
       <Header
         leftComponent={
-          <TouchableOpacity onPress={
-            ()=>Alert.alert(
-              "Are you sure you want to log out?",
-              "",
-              [
-                {
-                  text: "Cancel",
-                  onPress: () => {},
-                  style: "cancel"
-                },
-                { text: "OK", onPress: () => signOut() }
-              ]
-            )
-          }>
-            <Image
-              style={{ height: 55, width: 55 }}
-              source={require("../../assets/LogOut.png")}
-            />
-          </TouchableOpacity>
-        }
-        centerComponent={{ text: "Bids", style: styles.heading }}
-        containerStyle={{ backgroundColor: "#fff" }}
-        rightComponent={
           <TouchableOpacity
-            onPress={() => {
-              navigation.navigate("UserOrders");
-            }}
+            onPress={() => navigation.navigate("UserMainScreen")}
           >
-            
             <Image
               style={{ height: 55, width: 55 }}
-              source={require("../../assets/Orders.png")}
+              source={require("../../assets/Back.png")}
             />
           </TouchableOpacity>
         }
+        centerComponent={{ text: "Orders", style: styles.heading }}
+        containerStyle={{ backgroundColor: "#fff" }}
       />
       <View
         style={{
@@ -108,7 +86,7 @@ const UserMainScreen = ({ navigation }) => {
             style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
           >
             <Text style={{ fontWeight: "300", fontSize: 30, color: "#fff" }}>
-              No Bids Yet!
+              No Orders Yet!
             </Text>
           </View>
         ) : (
@@ -144,4 +122,4 @@ const styles = StyleSheet.create({
     fontWeight: "400",
   },
 });
-export default UserMainScreen;
+export default UserOrders;

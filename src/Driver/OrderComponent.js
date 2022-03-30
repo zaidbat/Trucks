@@ -9,6 +9,7 @@ import {
   FlatList,
   TextInput,
   Modal,
+  Linking,
 } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Header } from "react-native-elements";
@@ -37,7 +38,7 @@ function toRad(Value) {
   return (Value * Math.PI) / 180;
 }
 
-export default function BidComponent({ data, navigation }) {
+export default function OrderComponent({ data }) {
   const [showPickup, setShowPickup] = useState(false);
   const [showDropOff, setShowDropOff] = useState(false);
 
@@ -60,7 +61,7 @@ export default function BidComponent({ data, navigation }) {
             left: 10,
             borderRadius: 50,
           }}
-          buttonStyle={{ backgroundColor: "#7040F6", padding: 25 }}
+          buttonStyle={{ backgroundColor: "#64BF46", padding: 25 }}
           titleStyle={{ position: "absolute" }}
         />
         <MapView
@@ -74,7 +75,7 @@ export default function BidComponent({ data, navigation }) {
           style={{ flex: 1 }}
         >
           <Marker
-            pinColor="violet"
+            pinColor="green"
             coordinate={{
               latitude: geo.data.pickupLatitude,
               longitude: geo.data.pickupLongitude,
@@ -84,7 +85,7 @@ export default function BidComponent({ data, navigation }) {
         <View
           style={{
             height: "30%",
-            backgroundColor: "#7040F6",
+            backgroundColor: "#64BF46",
             borderTopRightRadius: 20,
             borderTopLeftRadius: 20,
             padding: 25,
@@ -94,7 +95,7 @@ export default function BidComponent({ data, navigation }) {
             style={{
               flex: 1,
               padding: 20,
-              backgroundColor: "#7A62EF",
+              backgroundColor: "#6ECC4C",
               borderRadius: 20,
             }}
           >
@@ -125,7 +126,7 @@ export default function BidComponent({ data, navigation }) {
             left: 10,
             borderRadius: 50,
           }}
-          buttonStyle={{ backgroundColor: "#7040F6", padding: 25 }}
+          buttonStyle={{ backgroundColor: "#64BF46", padding: 25 }}
           titleStyle={{ position: "absolute" }}
         />
         <MapView
@@ -149,7 +150,7 @@ export default function BidComponent({ data, navigation }) {
         <View
           style={{
             height: "30%",
-            backgroundColor: "#7040F6",
+            backgroundColor: "#64BF46",
             borderTopRightRadius: 20,
             borderTopLeftRadius: 20,
             padding: 25,
@@ -159,7 +160,7 @@ export default function BidComponent({ data, navigation }) {
             style={{
               flex: 1,
               padding: 20,
-              backgroundColor: "#7A62EF",
+              backgroundColor: "#6ECC4C",
               borderRadius: 20,
             }}
           >
@@ -178,7 +179,7 @@ export default function BidComponent({ data, navigation }) {
       </Modal>
       <View
         style={{
-          backgroundColor: "#7A62EF",
+          backgroundColor: "#6ECC4C",
           borderRadius: 20,
           padding: 20,
           paddingTop: 30,
@@ -197,18 +198,13 @@ export default function BidComponent({ data, navigation }) {
               onPress={() => {
                 setShowPickup(true);
               }}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                //borderWidth: 1,
-                width: "45%",
-              }}
+              style={{ flexDirection: "row", alignItems: "center" }}
             >
               <Image
                 style={{ width: 30, height: 30 }}
                 source={require("../../assets/circles.png")}
               />
-              {/* <Image
+              <Image
                 style={{
                   width: 60,
                   height: 60,
@@ -216,45 +212,19 @@ export default function BidComponent({ data, navigation }) {
                   borderRadius: 15,
                 }}
                 source={require("../../assets/Map.png")}
-              /> */}
-              <MapView
-                // provider="google"
-                region={{
-                  latitude: geo.data.pickupLatitude,
-                  longitude: geo.data.pickupLongitude,
-                  latitudeDelta: 0.005,
-                  longitudeDelta: 0.005,
-                }}
-                style={{ width: "80%", height: 100, borderRadius: 15 }}
-                onPress={() => {
-                  setShowPickup(true);
-                }}
-              >
-                <Marker
-                  pinColor="violet"
-                  coordinate={{
-                    latitude: geo.data.pickupLatitude,
-                    longitude: geo.data.pickupLongitude,
-                  }}
-                ></Marker>
-              </MapView>
+              />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => {
                 setShowDropOff(true);
               }}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                //borderWidth: 1,
-                width: "45%",
-              }}
+              style={{ flexDirection: "row", alignItems: "center" }}
             >
               <Image
-                style={{ width: 30, height: 30, transform: [{ scaleX: -1 }] }}
+                style={{ width: 30, height: 30 }}
                 source={require("../../assets/circles.png")}
               />
-              {/* <Image
+              <Image
                 style={{
                   width: 60,
                   height: 60,
@@ -262,28 +232,7 @@ export default function BidComponent({ data, navigation }) {
                   borderRadius: 15,
                 }}
                 source={require("../../assets/Map.png")}
-              /> */}
-              <MapView
-                //provider="google"
-                region={{
-                  latitude: geo.data.dropOffLatitude,
-                  longitude: geo.data.dropOffLongitude,
-                  latitudeDelta: 0.005,
-                  longitudeDelta: 0.005,
-                }}
-                style={{ width: "80%", height: 100, borderRadius: 15 }}
-                onPress={() => {
-                  setShowDropOff(true);
-                }}
-              >
-                <Marker
-                  pinColor="violet"
-                  coordinate={{
-                    latitude: geo.data.dropOffLatitude,
-                    longitude: geo.data.dropOffLongitude,
-                  }}
-                ></Marker>
-              </MapView>
+              />
             </TouchableOpacity>
           </View>
           <View
@@ -305,14 +254,14 @@ export default function BidComponent({ data, navigation }) {
                 alignSelf: "center",
                 top: -25,
                 padding: 10,
-                backgroundColor: "#7A62EF",
+                backgroundColor: "#6ECC4C",
               }}
             >
               <Image
                 style={{ width: 30, aspectRatio: 1.1, marginRight: 10 }}
                 source={require("../../assets/KmCount.png")}
               />
-              <Text style={{ fontWeight: "500", color: "#fff" }}>
+              <Text style={{ fontWeight: "500", color: "#000" }}>
                 {calcCrow(
                   data.pickupLatitude,
                   data.pickupLongitude,
@@ -323,58 +272,8 @@ export default function BidComponent({ data, navigation }) {
               </Text>
             </View>
           </View>
-          <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  //borderWidth: 1,
-                  alignSelf:'flex-start'
-                }}
-              >
-                <View>
-                  <Image
-                    style={{ width: 30, height: 30, marginRight: 15 }}
-                    source={require("../../assets/circles.png")}
-                  />
-                </View>
-
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: "400",
-                    color: "#fff",
-                  }}
-                >
-                  {data.pickupDescription}
-                </Text>
-              </View>
-              <View style={{ flexDirection: "row", alignItems: "center",alignSelf:'flex-start' }}>
-                <View>
-                  <Image
-                    style={{
-                      width: 30,
-                      height: 30,
-                      marginRight: 15,
-                      transform: [{ scaleX: -1 }],
-                    }}
-                    source={require("../../assets/circles.png")}
-                  />
-                </View>
-
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: "400",
-                    color: "#fff",
-                  }}
-                >
-                  {data.dropOffDescription}
-                </Text>
-              </View>
           <View style={{ flexDirection: "row" }}>
-            
             <View style={{ width: "60%" }}>
-              
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <View>
                   <Image
@@ -387,7 +286,7 @@ export default function BidComponent({ data, navigation }) {
                   style={{
                     fontSize: 18,
                     fontWeight: "400",
-                    color: "#fff",
+                    color: "#000",
                   }}
                 >
                   {data.moveType}
@@ -405,7 +304,7 @@ export default function BidComponent({ data, navigation }) {
                   style={{
                     fontSize: 18,
                     fontWeight: "400",
-                    color: "#fff",
+                    color: "#000",
                   }}
                 >
                   {data.date}
@@ -424,7 +323,7 @@ export default function BidComponent({ data, navigation }) {
                   style={{
                     fontSize: 18,
                     fontWeight: "400",
-                    color: "#fff",
+                    color: "#000",
                   }}
                 >
                   {data.time}
@@ -442,7 +341,7 @@ export default function BidComponent({ data, navigation }) {
                   style={{
                     fontSize: 18,
                     fontWeight: "400",
-                    color: "#fff",
+                    color: "#000",
                   }}
                 >
                   {data.price}
@@ -452,7 +351,7 @@ export default function BidComponent({ data, navigation }) {
             <View
               style={{
                 width: "40%",
-                backgroundColor: "#7A62EF",
+                backgroundColor: "#6ECC4C",
                 borderRadius: 15,
                 justifyContent: "flex-end",
               }}
@@ -460,26 +359,36 @@ export default function BidComponent({ data, navigation }) {
               <Text
                 style={{
                   alignSelf: "center",
-                  color: "#fff",
+                  color: "#000",
                   padding: 10,
                   fontSize: 20,
                   justifyContent: "flex-start",
                 }}
               >
-                {data.offersCount} Offers
+                {data.driverName}
               </Text>
               <TouchableOpacity
+                onPress={() => {
+                  Linking.openURL(`tel:${data.phoneNumber}`);
+                }}
                 style={{
                   alignSelf: "center",
                   justifyContent: "flex-start",
-                  backgroundColor: "#7040F6",
+                  backgroundColor: "#64BF46",
                   padding: 10,
                   paddingHorizontal: 20,
                   borderRadius: 10,
+                  flexDirection:'row'
                 }}
-                onPress={() => navigation.navigate("OffersOnBid", data.id)}
               >
-                <Text style={{ color: "#fff" }}>View Offers</Text>
+                <Image
+                    style={{ width: 20, height: 23, marginRight: 15 }}
+                    source={require("../../assets/phone.png")}
+                  />
+                <Text style={{ color: "#000" , fontSize:14}}>
+                  
+                  {data.phoneNumber}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>

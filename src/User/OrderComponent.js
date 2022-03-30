@@ -9,6 +9,7 @@ import {
   FlatList,
   TextInput,
   Modal,
+  Linking,
 } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Header } from "react-native-elements";
@@ -37,7 +38,7 @@ function toRad(Value) {
   return (Value * Math.PI) / 180;
 }
 
-export default function BidComponent({ data, navigation }) {
+export default function OrderComponent({ data }) {
   const [showPickup, setShowPickup] = useState(false);
   const [showDropOff, setShowDropOff] = useState(false);
 
@@ -197,18 +198,13 @@ export default function BidComponent({ data, navigation }) {
               onPress={() => {
                 setShowPickup(true);
               }}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                //borderWidth: 1,
-                width: "45%",
-              }}
+              style={{ flexDirection: "row", alignItems: "center" }}
             >
               <Image
                 style={{ width: 30, height: 30 }}
                 source={require("../../assets/circles.png")}
               />
-              {/* <Image
+              <Image
                 style={{
                   width: 60,
                   height: 60,
@@ -216,45 +212,19 @@ export default function BidComponent({ data, navigation }) {
                   borderRadius: 15,
                 }}
                 source={require("../../assets/Map.png")}
-              /> */}
-              <MapView
-                // provider="google"
-                region={{
-                  latitude: geo.data.pickupLatitude,
-                  longitude: geo.data.pickupLongitude,
-                  latitudeDelta: 0.005,
-                  longitudeDelta: 0.005,
-                }}
-                style={{ width: "80%", height: 100, borderRadius: 15 }}
-                onPress={() => {
-                  setShowPickup(true);
-                }}
-              >
-                <Marker
-                  pinColor="violet"
-                  coordinate={{
-                    latitude: geo.data.pickupLatitude,
-                    longitude: geo.data.pickupLongitude,
-                  }}
-                ></Marker>
-              </MapView>
+              />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => {
                 setShowDropOff(true);
               }}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                //borderWidth: 1,
-                width: "45%",
-              }}
+              style={{ flexDirection: "row", alignItems: "center" }}
             >
               <Image
-                style={{ width: 30, height: 30, transform: [{ scaleX: -1 }] }}
+                style={{ width: 30, height: 30 }}
                 source={require("../../assets/circles.png")}
               />
-              {/* <Image
+              <Image
                 style={{
                   width: 60,
                   height: 60,
@@ -262,28 +232,7 @@ export default function BidComponent({ data, navigation }) {
                   borderRadius: 15,
                 }}
                 source={require("../../assets/Map.png")}
-              /> */}
-              <MapView
-                //provider="google"
-                region={{
-                  latitude: geo.data.dropOffLatitude,
-                  longitude: geo.data.dropOffLongitude,
-                  latitudeDelta: 0.005,
-                  longitudeDelta: 0.005,
-                }}
-                style={{ width: "80%", height: 100, borderRadius: 15 }}
-                onPress={() => {
-                  setShowDropOff(true);
-                }}
-              >
-                <Marker
-                  pinColor="violet"
-                  coordinate={{
-                    latitude: geo.data.dropOffLatitude,
-                    longitude: geo.data.dropOffLongitude,
-                  }}
-                ></Marker>
-              </MapView>
+              />
             </TouchableOpacity>
           </View>
           <View
@@ -323,58 +272,8 @@ export default function BidComponent({ data, navigation }) {
               </Text>
             </View>
           </View>
-          <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  //borderWidth: 1,
-                  alignSelf:'flex-start'
-                }}
-              >
-                <View>
-                  <Image
-                    style={{ width: 30, height: 30, marginRight: 15 }}
-                    source={require("../../assets/circles.png")}
-                  />
-                </View>
-
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: "400",
-                    color: "#fff",
-                  }}
-                >
-                  {data.pickupDescription}
-                </Text>
-              </View>
-              <View style={{ flexDirection: "row", alignItems: "center",alignSelf:'flex-start' }}>
-                <View>
-                  <Image
-                    style={{
-                      width: 30,
-                      height: 30,
-                      marginRight: 15,
-                      transform: [{ scaleX: -1 }],
-                    }}
-                    source={require("../../assets/circles.png")}
-                  />
-                </View>
-
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: "400",
-                    color: "#fff",
-                  }}
-                >
-                  {data.dropOffDescription}
-                </Text>
-              </View>
           <View style={{ flexDirection: "row" }}>
-            
             <View style={{ width: "60%" }}>
-              
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <View>
                   <Image
@@ -448,6 +347,7 @@ export default function BidComponent({ data, navigation }) {
                   {data.price}
                 </Text>
               </View>
+              
             </View>
             <View
               style={{
@@ -466,9 +366,12 @@ export default function BidComponent({ data, navigation }) {
                   justifyContent: "flex-start",
                 }}
               >
-                {data.offersCount} Offers
+                {data.driverName}
               </Text>
               <TouchableOpacity
+                onPress={() => {
+                  Linking.openURL(`tel:${data.phoneNumber}`);
+                }}
                 style={{
                   alignSelf: "center",
                   justifyContent: "flex-start",
@@ -476,10 +379,16 @@ export default function BidComponent({ data, navigation }) {
                   padding: 10,
                   paddingHorizontal: 20,
                   borderRadius: 10,
+                  flexDirection:'row'
                 }}
-                onPress={() => navigation.navigate("OffersOnBid", data.id)}
               >
-                <Text style={{ color: "#fff" }}>View Offers</Text>
+                <Image
+                  style={{ width: 20, height: 23, marginRight: 5 }}
+                  source={require("../../assets/phone.png")}
+                />
+                <Text style={{ color: "#fff", fontSize: 18 }}>
+                  {data.phoneNumber}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>

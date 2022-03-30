@@ -14,9 +14,42 @@ import {
   KeyboardAvoidingView,
 } from "react-native";
 import { Button } from "react-native-elements";
+import * as SecureStore from "expo-secure-store";
+import { AuthContext } from "../Shared/Utils";
+import trucksApi from "../Shared/trucksApi";
+const UserRegister = () => {
+  const { signIn } = React.useContext(AuthContext);
+  const { signOut } = React.useContext(AuthContext);
+  const lastNameRef = useRef();
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [continueLoading, setContinueLoading] = useState(false);
+  const register = async () => {
+    setContinueLoading(true);
+    let token = await SecureStore.getItemAsync("token");
+    trucksApi
+      .post("customer/UpdateInfo", {
+        firstName,
+        lastName,
+      }, {headers:  {
+        Authorization: "Bearer " + token,
+      }})
+      .then((dataResult) => {
+        if (dataResult.data.status == 1) {
+          setTimeout(() => {
+            setContinueLoading(false);
+            signIn({ isRegistered: true, token: token, userType: "user" });
+          }, 500);
 
-export default function UserRegister() {
-  const lastName = useRef();
+          console.log(dataResult.data);
+        } else {
+          alert(dataResult.data.message);
+        }
+      }).catch(function (error) {
+        console.log(error);
+        setContinueLoading(true);
+      })
+  };
 
   return (
     <ScrollView
@@ -69,14 +102,16 @@ export default function UserRegister() {
                     autoCorrect={false}
                     returnKeyType="next"
                     onSubmitEditing={() => {
-                      lastName.current.focus();
+                      lastNameRef.current.focus();
                     }}
                     style={styles.input}
                     placeholder="First Name"
                     placeholderTextColor={"#fff"}
+                    onChangeText={setFirstName}
+                    value={firstName}
                   />
                   <TextInput
-                    ref={lastName}
+                    ref={lastNameRef}
                     autoCorrect={false}
                     returnKeyType="done"
                     onSubmitEditing={() => {
@@ -85,6 +120,8 @@ export default function UserRegister() {
                     style={styles.input}
                     placeholder="Last Name"
                     placeholderTextColor={"#FFF"}
+                    onChangeText={setLastName}
+                    value={lastName}
                   />
                 </View>
               </View>
@@ -108,13 +145,22 @@ export default function UserRegister() {
                 padding: 15,
               }}
               titleStyle={{ color: "#fff", fontSize: 22 }}
+              loading={continueLoading}
+              onPress={register}
             />
+            <TouchableOpacity style={{ marginTop: 20 }} onPress={()=>signOut()}>
+              <Text
+                style={{ color: "#F4B63F", fontSize: 20, fontWeight: "300" }}
+              >
+                Sign Out
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
     </ScrollView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   content: {
@@ -139,17 +185,13 @@ const styles = StyleSheet.create({
   },
   fieldBoxFullWidth: {
     flexDirection: "row",
-    // borderBottomWidth: 1,
-    // borderColor: "#C9CBCE",
     alignItems: "center",
     justifyContent: "center",
-    //borderWidth: 2,
   },
   input: {
     fontSize: 25,
     fontWeight: "200",
     color: "white",
-    //borderWidth: 2,
     paddingBottom: 20,
     width: "45%",
     marginHorizontal: 16,
@@ -198,3 +240,4 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
 });
+export default UserRegister;

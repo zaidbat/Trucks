@@ -18,8 +18,12 @@ import {
 } from "react-native-confirmation-code-field";
 import styles from "../Shared/PhoneNumberStyle.js";
 import { Button } from "react-native-elements";
+import trucksApi from "../Shared/trucksApi.js";
+import { AuthContext } from "../Shared/Utils.js";
 
-export default function DriverPhoneNumber() {
+const DriverPhoneNumber = () => {
+  const { signIn } = React.useContext(AuthContext);
+
   const [phoneApiLoading, setPhoneApiLoading] = useState(false);
   const [codeApiLoading, setCodeApiLoading] = useState(false);
 
@@ -38,49 +42,43 @@ export default function DriverPhoneNumber() {
   const [modalVisable, setModalVisable] = useState(false);
   const sendPhoneNo = () => {
     setPhoneApiLoading(true);
-    const requestOptions = {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        phonenumber: phoneNumber,
-      }),
-    };
-    fetch("http://192.168.1.7/Trucks.API/API/customer/login", requestOptions)
-      .then((response) => response.json())
-      .then((dataResult) => {
-        if (dataResult.status == 1) {
-          setTimeout(() => {
-            setModalVisable(true);
-            setPhoneApiLoading(false);
-          }, 2000);
 
-          console.log(dataResult);
-        } else {
-          alert(dataResult.message);
-        }
-      });
+    trucksApi
+    .post("driver/login", {
+      phonenumber: phoneNumber,
+    })
+    .then((dataResult) => {
+      if (dataResult.data.status == 1) {
+        setTimeout(() => {
+          setModalVisable(true);
+          setPhoneApiLoading(false);
+        }, 500);
+
+        console.log(dataResult.data);
+      } else {
+        alert(dataResult.data.message);
+      }
+    });
   };
 
   const SendCodeNo = () => {
     console.log("codeNumber: " + code);
     setCodeErrorMessage("");
-    const requestOptions = {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    setCodeApiLoading(true);
+    trucksApi
+      .post("driver/login", {
         phonenumber: phoneNumber,
         code: code,
-      }),
-    };
-    setCodeApiLoading(true);
-    fetch("http://192.168.1.7/Trucks.API/API/customer/login", requestOptions)
-      .then((response) => response.json())
+      })
       .then((dataResult) => {
-        if (dataResult.status == 1) {
+        if (dataResult.data.status == 1) {
           setTimeout(() => {
+            let userType = "driver";
+            let isRegistered = dataResult.data.isRegistered;
+            let token = dataResult.data.token;
             setCodeApiLoading(false);
-            alert("yeahhhhh");
-          }, 2000);
+            signIn({ userType, isRegistered, token });
+          }, 500);
         } else {
           setCodeApiLoading(false);
           setCodeErrorMessage("Wrong Code");
@@ -284,4 +282,6 @@ export default function DriverPhoneNumber() {
       </View>
     </View>
   );
-}
+};
+
+export default DriverPhoneNumber;

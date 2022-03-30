@@ -11,10 +11,53 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   ScrollView,
+ 
 } from "react-native";
 import { Button } from "react-native-elements";
+import trucksApi from "../Shared/trucksApi";
+import * as SecureStore from "expo-secure-store";
+import { AuthContext } from "../Shared/Utils";
 
-export default function RegisterUser({ navigation }) {
+const RegisterDriver = ({ navigation }) => {
+  const { signIn } = React.useContext(AuthContext);
+  const register = async () => {
+    //setContinueLoading(true);
+    let token = await SecureStore.getItemAsync("token");
+    
+    trucksApi
+      .post(
+        "driver/UpdateInfo",
+        {
+          fullname: name,
+          trucktype: truckName,
+          vehiclecode: parseInt(vehicleCode),
+          vehicleno: parseInt(vehicleNo),
+        },
+        {
+          headers: {
+            Authorization: "Bearer " + token,
+          },
+        }
+      )
+      .then((dataResult) => {
+        console.log(dataResult.data);
+        if (dataResult.data.status == 1) {
+          setTimeout(() => {
+            //setContinueLoading(false);
+            signIn({ isRegistered: true, token: token, userType: "driver" });
+          }, 500);
+
+          console.log(dataResult.data);
+        } else {
+          alert(dataResult.data.message);
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+        //setContinueLoading(true);
+      });
+  };
+
   const plateCodeRef = useRef();
   const plateNoRef = useRef();
 
@@ -53,215 +96,212 @@ export default function RegisterUser({ navigation }) {
       url: "https://res.cloudinary.com/dxdrfzvvo/image/upload/v1639141764/we/truck5_fa0rv1.png",
     },
   ];
-
+  //LogBox.ignoreAllLogs(true);
   return (
-    <ScrollView contentContainerStyle={{flexGrow: 1}}
-    keyboardShouldPersistTaps='handled' >
-      
-        <View style={styles.content}>
+    <ScrollView
+      contentContainerStyle={{ flexGrow: 1 }}
+      keyboardShouldPersistTaps="handled"
+    >
+      <View style={styles.content}>
+        <View
+          style={{
+            alignItems: "center",
+            zIndex: 10,
+            justifyContent: "center",
+            paddingTop: Constants.statusBarHeight,
+          }}
+        >
           <View
             style={{
               alignItems: "center",
-              zIndex: 10,
               justifyContent: "center",
-              paddingTop: Constants.statusBarHeight,
+              paddingHorizontal: 10,
+              paddingBottom: 25,
+              backgroundColor: "#27323F",
+              position: "absolute",
+              bottom: -30,
+              borderRadius: 40,
             }}
           >
-            <View
+            <Image
               style={{
-                alignItems: "center",
-                justifyContent: "center",
-                paddingHorizontal: 10,
-                paddingBottom: 25,
-                backgroundColor: "#27323F",
-                position: "absolute",
-                bottom: -30,
-                borderRadius: 40,
+                width: 40,
+                height: 57,
               }}
-            >
-              <Image
-                style={{
-                  width: 40,
-                  height: 57,
-                }}
-                source={require("../../assets/location.png")}
-              ></Image>
-            </View>
+              source={require("../../assets/location.png")}
+            ></Image>
           </View>
+        </View>
 
-          <View style={styles.body}>
-            <View style={styles.heading}>
-              <Text style={styles.headingText}>Set up your profile</Text>
-            </View>
-            <View style={styles.fieldsContainer}>
-              <TouchableWithoutFeedback>
-                <View style={{ flex: 1, justifyContent: "space-around" }}>
-                  <View style={styles.fieldBoxFullWidth}>
-                    <TextInput
+        <View style={styles.body}>
+          <View style={styles.heading}>
+            <Text style={styles.headingText}>Set up your profile</Text>
+          </View>
+          <View style={styles.fieldsContainer}>
+            <TouchableWithoutFeedback>
+              <View style={{ flex: 1, justifyContent: "space-around" }}>
+                <View style={styles.fieldBoxFullWidth}>
+                  <TextInput
                     autoCorrect={false}
-                      returnKeyType="next"
-                      onSubmitEditing={() => {
-                        plateCodeRef.current.focus();
-                      }}
-                      style={styles.input}
-                      placeholder="Full Name"
-                      placeholderTextColor={"#FFF"}
-                      textContentType="name"
-                    />
-                  </View>
+                    returnKeyType="next"
+                    onSubmitEditing={() => {
+                      plateCodeRef.current.focus();
+                    }}
+                    style={styles.input}
+                    placeholder="Full Name"
+                    placeholderTextColor={"#FFF"}
+                    textContentType="name"
+                    value={name}
+                    onChangeText={setName}
+                  />
+                </View>
 
-                  <View style={styles.fieldBoxFullWidth}>
-                    <View style={{ flexDirection: "row" }}>
-                      <View
-                        style={{
-                          flexDirection: "row",
-                          width: "100%",
-                        }}
-                      >
-                        <View style={{ marginRight: 15 }}>
-                          <Text style={styles.inputTitle}>Plate No. </Text>
-                        </View>
-                        <TextInput
-                          ref={plateCodeRef}
-                          maxLength={2}
-                          value={vehicleCode}
-                          onChangeText={(text) => {
-                            setVehicleCode(text);
-                            if (text.length === 2) {
-                              plateNoRef.current.focus();
-                            }
-                            
-                          }}
-                          placeholder={"23"}
-                          placeholderTextColor={"#808080"}
-                          style={[
-                            styles.input,
-                            { letterSpacing: 2, width: 40 },
-                          ]}
-                          keyboardType="numeric"
-                        />
-                        <Text style={{ color: "#fff", fontSize: 25 }}>- </Text>
-                        <TextInput
-                          ref={plateNoRef}
-                          keyboardType="numeric"
-                          maxLength={5}
-                          value={vehicleNo}
-                          onChangeText={(text) => {
-                            setVehicleNo(text);
-                            if (text.length === 0) {
-                              plateCodeRef.current.focus();
-                            }
-                            if(text.length === 5){
-                              Keyboard.dismiss()
-                            }
-                          }}
-                          placeholder={"13292"}
-                          placeholderTextColor={"#808080"}
-                          style={[
-                            styles.input,
-                            { letterSpacing: 2, width: 200 },
-                          ]}
-                        />
-                      </View>
-                    </View>
-                  </View>
-                  <View style={styles.fieldBoxFullWidth}>
+                <View style={styles.fieldBoxFullWidth}>
+                  <View style={{ flexDirection: "row" }}>
                     <View
                       style={{
                         flexDirection: "row",
-                        alignItems: "flex-end",
-                        paddingBottom: 20,
+                        width: "100%",
                       }}
                     >
-                      <View style={{ flexDirection: "row" }}>
-                        <View style={{ marginRight: 15 }}>
-                          <Text style={styles.inputTitle}>Truck Type</Text>
-                        </View>
+                      <View style={{ marginRight: 15 }}>
+                        <Text style={styles.inputTitle}>Plate No. </Text>
                       </View>
-                      <View style={{ flexDirection: "row" }}>
-                        <TextInput
-                          editable={false}
-                          style={styles.innerInput}
-                          placeholder="Choice"
-                          value={truckName}
-                          onChangeText={(text) => {
-                            setTruckName(text);
-                          }}
-                          placeholderTextColor={"#FFF"}
-                          returnKeyType="next"
-                        />
-                      </View>
+                      <TextInput
+                        ref={plateCodeRef}
+                        maxLength={2}
+                        value={vehicleCode}
+                        onChangeText={(text) => {
+                          setVehicleCode(text);
+                          if (text.length === 2) {
+                            plateNoRef.current.focus();
+                          }
+                        }}
+                        placeholder={"23"}
+                        placeholderTextColor={"#808080"}
+                        style={[styles.input, { letterSpacing: 2, width: 40 }]}
+                        keyboardType="numeric"
+                      />
+                      <Text style={{ color: "#fff", fontSize: 25 }}>- </Text>
+                      <TextInput
+                        ref={plateNoRef}
+                        keyboardType="numeric"
+                        maxLength={5}
+                        value={vehicleNo}
+                        onChangeText={(text) => {
+                          setVehicleNo(text);
+                          if (text.length === 0) {
+                            plateCodeRef.current.focus();
+                          }
+                          if (text.length === 5) {
+                            Keyboard.dismiss();
+                          }
+                        }}
+                        placeholder={"13292"}
+                        placeholderTextColor={"#808080"}
+                        style={[styles.input, { letterSpacing: 2, width: 200 }]}
+                      />
                     </View>
                   </View>
+                </View>
+                <View style={styles.fieldBoxFullWidth}>
                   <View
-                    style={[styles.fieldBoxFullWidth, { borderBottomWidth: 0 }]}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "flex-end",
+                      paddingBottom: 20,
+                    }}
                   >
-                    <ScrollView
-                      horizontal={true}
-                      showsHorizontalScrollIndicator={false}
-                    >
-                      <View
-                        style={{ flexDirection: "row", alignItems: "flex-end" }}
-                      >
-                        {(() => {
-                          var trucksButtons = [];
-                          for (let index = 0; index < trucks.length; index++) {
-                            trucksButtons.push(
-                              <TouchableOpacity
-                                activeOpacity={0.8}
-                                style={
-                                  state.key === trucks[index].key
-                                    ? styles.truck
-                                    : styles.truckActive
-                                }
-                                onPress={() => {
-                                  setState({ key: trucks[index].key });
-                                  setTruckName(trucks[index].name);
-                                }}
-                              >
-                                <View style={{ width: "90%", height: "90%" }}>
-                                  <Image
-                                    style={{ width: "100%", height: "100%" }}
-                                    source={{ uri: trucks[index].url }}
-                                  />
-                                </View>
-                              </TouchableOpacity>
-                            );
-                          }
-                          return trucksButtons;
-                        })()}
+                    <View style={{ flexDirection: "row" }}>
+                      <View style={{ marginRight: 15 }}>
+                        <Text style={styles.inputTitle}>Truck Type</Text>
                       </View>
-                    </ScrollView>
+                    </View>
+                    <View style={{ flexDirection: "row" }}>
+                      <TextInput
+                        editable={false}
+                        style={styles.innerInput}
+                        placeholder="Choice"
+                        value={truckName}
+                        onChangeText={(text) => {
+                          setTruckName(text);
+                        }}
+                        placeholderTextColor={"#FFF"}
+                        returnKeyType="next"
+                      />
+                    </View>
                   </View>
                 </View>
-              </TouchableWithoutFeedback>
-            </View>
-            <View
-              style={{
-                justifyContent: "flex-start",
-                flex: 4,
-                alignItems: "center",
+                <View
+                  style={[styles.fieldBoxFullWidth, { borderBottomWidth: 0 }]}
+                >
+                  <ScrollView
+                    horizontal={true}
+                    showsHorizontalScrollIndicator={false}
+                  >
+                    <View
+                      style={{ flexDirection: "row", alignItems: "flex-end" }}
+                    >
+                      {(() => {
+                        var trucksButtons = [];
+                        for (let index = 0; index < trucks.length; index++) {
+                          trucksButtons.push(
+                            <TouchableOpacity
+                              activeOpacity={0.8}
+                              style={
+                                state.key === trucks[index].key
+                                  ? styles.truck
+                                  : styles.truckActive
+                              }
+                              onPress={() => {
+                                setState({ key: trucks[index].key });
+                                setTruckName(trucks[index].name);
+                              }}
+                            >
+                              <View style={{ width: "90%", height: "90%" }}>
+                                <Image
+                                  style={{ width: "100%", height: "100%" }}
+                                  source={{ uri: trucks[index].url }}
+                                />
+                              </View>
+                            </TouchableOpacity>
+                          );
+                        }
+                        return trucksButtons;
+                      })()}
+                    </View>
+                  </ScrollView>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+          <View
+            style={{
+              justifyContent: "flex-start",
+              flex: 4,
+              alignItems: "center",
+            }}
+          >
+            <Button
+              disabled={!name || !vehicleCode || !vehicleNo || !truckName}
+              loadingProps={{ color: "#fff" }}
+              title="Continue"
+              type="outline"
+              buttonStyle={{
+                borderColor: "#fff",
+                width: 250,
+                borderRadius: 10,
+                padding: 15,
               }}
-            >
-              <Button
-                loadingProps={{ color: "#fff" }}
-                title="Continue"
-                type="outline"
-                buttonStyle={{
-                  borderColor: "#fff",
-                  width: 250,
-                  borderRadius: 10,
-                  padding: 15,
-                }}
-                titleStyle={{ color: "#fff", fontSize: 22 }}
-              />
-            </View>
+              titleStyle={{ color: "#fff", fontSize: 22 }}
+              onPress={register}
+            />
           </View>
         </View>
-      
+      </View>
     </ScrollView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   content: {
@@ -283,13 +323,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     flex: 10,
     padding: 35,
-    
   },
   fieldBoxFullWidth: {
-    
     borderBottomWidth: 1,
     borderColor: "#C9CBCE",
-    
   },
   input: {
     fontSize: 25,
@@ -303,7 +340,6 @@ const styles = StyleSheet.create({
     fontWeight: "200",
     color: "white",
     width: "75%",
-    
   },
   heading: {
     justifyContent: "flex-end",
@@ -329,7 +365,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginRight: 10,
   },
-  truckActive: { 
+  truckActive: {
     borderWidth: 1,
     borderColor: "#FFF",
     width: 65,
@@ -341,3 +377,4 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
 });
+export default RegisterDriver;
